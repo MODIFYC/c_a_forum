@@ -1,3 +1,4 @@
+
 const express = require('express')
 const app = express()
 
@@ -8,8 +9,11 @@ app.use(express.urlencoded({extended:true}))
 
 const { MongoClient } = require('mongodb')
 
+//env 처리
+require('dotenv').config();
+
 let db
-const url = 'mongodb+srv://adming:qwer1234@codingapple.dke81js.mongodb.net/?retryWrites=true&w=majority'
+const url = `mongodb+srv://${process.env.MONGOID}:${process.env.MONGOPW}@codingapple.dke81js.mongodb.net/?retryWrites=true&w=majority`
 new MongoClient(url).connect().then((client)=>{
   console.log('DB연결성공')
   db = client.db('forum')
