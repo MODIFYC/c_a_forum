@@ -1,3 +1,5 @@
+//env 처리
+require('dotenv').config();
 
 const express = require('express')
 const app = express()
@@ -8,9 +10,6 @@ app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 
 const { MongoClient } = require('mongodb')
-
-//env 처리
-require('dotenv').config();
 
 let db
 const url = `mongodb+srv://${process.env.MONGOID}:${process.env.MONGOPW}@codingapple.dke81js.mongodb.net/?retryWrites=true&w=majority`
@@ -23,6 +22,61 @@ new MongoClient(url).connect().then((client)=>{
 }).catch((err)=>{
   console.log(err)
 })
+
+
+
+// arduino 설정
+var SerialPort = require('serialport').SerialPort;
+var serialPort = new SerialPort({
+    path: 'COM5',
+    baudRate : 9600,
+    // defaults for Arduino serial communication
+    dataBits : 8,
+    parity : 'none',
+    stopBits: 1,
+    flowControl: false
+})
+
+// 아두이노 연결
+serialPort.on('open', function () {
+  console.log('open serial communication');
+  serialPort.on('data', function (data) {
+    console.log(data.toString());
+  });
+  // console.log('Data: ', serialPort);
+})
+
+
+// arduino web
+app.get('/led/:action', function (req, res) {
+    
+  var action = req.params.action || req.params;
+  
+    
+  if (action == 'on') {
+    
+    serialPort.write("1", function(err) {
+      if (err) {
+        return console.error('Error writing to serial port: ', err.message);
+      }
+      console.log('Sending: 1');
+      return res.send('Led light is on!');
+    });
+  } 
+  else if (action == 'off') {
+    serialPort.write("0", function(err) {
+      if (err) {
+        return console.error('Error writing to serial port: ', err.message);
+      }
+      console.log('Sending: 0');
+      res.send('Led light is off!');
+    });
+  }
+  else {
+    return res.send('Action: ' + action);
+  }
+
+});
 
 
 app.get('/', (req, res) => {
